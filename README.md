@@ -11,6 +11,33 @@ A touchscreen-friendly information display for Raspberry Pi, designed for kitche
 - **Kiosk Mode**: Auto-starts at boot in fullscreen mode
 - **Touch-Optimized UI**: Large buttons and controls for touchscreen use
 
+## Screenshots
+
+### Main Display - Timetable Tab
+The main interface showing the real-time clock, current weather, and empty timetable view.
+
+![Main Timetable View](https://github.com/user-attachments/assets/fd869baf-4609-4e84-a123-d9785623c0bf)
+
+### Timetable with Events
+Manage your daily schedule with custom events, times, and recurring days.
+
+![Timetable with Events](https://github.com/user-attachments/assets/6990a313-19a3-4ccf-ba7c-e6be8ac2f3d4)
+
+### Shopping List
+Track your grocery items with checkboxes to mark items as purchased.
+
+![Shopping List](https://github.com/user-attachments/assets/45f00ba0-c7af-4814-ac00-96dd26a950e8)
+
+### Shopping List with Items
+View and manage your shopping items with quantities.
+
+![Shopping List with Items](https://github.com/user-attachments/assets/d98d3dc2-996d-4304-9605-a120df5425b4)
+
+### Weather Details
+Click "More Details" to see comprehensive weather information including humidity, wind, pressure, and more.
+
+![Weather Details](https://github.com/user-attachments/assets/41c1221e-a7c8-4846-ab95-747ffafe454a)
+
 ## Hardware Requirements
 
 - Raspberry Pi 5

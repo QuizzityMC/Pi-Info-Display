@@ -47,6 +47,10 @@ chmod +x install.sh
 ./install.sh
 ```
 
+```
+6790aa032d69ca8bea93e1d3dee8bb00
+```
+
 The installation script will:
 - Update system packages
 - Install required dependencies (Python, Chromium, etc.)

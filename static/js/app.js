@@ -7,6 +7,8 @@ const CANBERRA_LON = 149.1300;
 // State
 let timetableData = [];
 let shoppingData = [];
+let weatherDetailsVisible = false;
+let currentWeatherData = null;
 
 // Initialize app
 document.addEventListener('DOMContentLoaded', () => {
@@ -68,16 +70,26 @@ async function updateWeather() {
         // Check if API key is set
         if (WEATHER_API_KEY === 'YOUR_OPENWEATHERMAP_API_KEY') {
             // Use mock data for demonstration
-            displayWeather({
-                main: { temp: 22 },
-                weather: [{ description: 'partly cloudy' }]
-            });
+            currentWeatherData = {
+                main: { 
+                    temp: 22,
+                    feels_like: 21,
+                    humidity: 65,
+                    pressure: 1013
+                },
+                weather: [{ description: 'partly cloudy' }],
+                wind: { speed: 3.5, deg: 180 },
+                visibility: 10000,
+                sys: { sunrise: Date.now() / 1000 - 3600, sunset: Date.now() / 1000 + 3600 }
+            };
+            displayWeather(currentWeatherData);
             return;
         }
         
         const url = `https://api.openweathermap.org/data/2.5/weather?lat=${CANBERRA_LAT}&lon=${CANBERRA_LON}&units=metric&appid=${WEATHER_API_KEY}`;
         const response = await fetch(url);
         const data = await response.json();
+        currentWeatherData = data;
         displayWeather(data);
     } catch (error) {
         console.error('Error fetching weather:', error);
@@ -91,6 +103,54 @@ function displayWeather(data) {
     
     document.querySelector('.weather-temp').textContent = `${temp}°C`;
     document.querySelector('.weather-desc').textContent = description;
+    
+    // Update detailed weather info
+    updateWeatherDetails(data);
+}
+
+function updateWeatherDetails(data) {
+    // Feels like
+    document.getElementById('feels-like').textContent = `${Math.round(data.main.feels_like)}°C`;
+    
+    // Humidity
+    document.getElementById('humidity').textContent = `${data.main.humidity}%`;
+    
+    // Wind speed
+    document.getElementById('wind-speed').textContent = `${data.wind.speed.toFixed(1)} m/s`;
+    
+    // Wind direction
+    const windDeg = data.wind.deg;
+    const directions = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
+    const dirIndex = Math.round(windDeg / 45) % 8;
+    document.getElementById('wind-direction').textContent = directions[dirIndex];
+    
+    // Pressure
+    document.getElementById('pressure').textContent = `${data.main.pressure} hPa`;
+    
+    // Visibility
+    const visibilityKm = (data.visibility / 1000).toFixed(1);
+    document.getElementById('visibility').textContent = `${visibilityKm} km`;
+    
+    // Sunrise/Sunset
+    const sunrise = new Date(data.sys.sunrise * 1000);
+    const sunset = new Date(data.sys.sunset * 1000);
+    document.getElementById('sunrise').textContent = sunrise.toLocaleTimeString('en-AU', { hour: '2-digit', minute: '2-digit' });
+    document.getElementById('sunset').textContent = sunset.toLocaleTimeString('en-AU', { hour: '2-digit', minute: '2-digit' });
+}
+
+function toggleWeatherDetails() {
+    const panel = document.getElementById('weather-details-panel');
+    const btnText = document.getElementById('weather-btn-text');
+    
+    weatherDetailsVisible = !weatherDetailsVisible;
+    
+    if (weatherDetailsVisible) {
+        panel.classList.remove('hidden');
+        btnText.textContent = 'Hide Details';
+    } else {
+        panel.classList.add('hidden');
+        btnText.textContent = 'More Details';
+    }
 }
 
 // Data Loading

@@ -19,9 +19,64 @@
                     <div class="weather-temp">--°C</div>
                     <div class="weather-desc">Loading weather...</div>
                     <div class="weather-location">Canberra, Australia</div>
+                    <button class="weather-details-btn" onclick="toggleWeatherDetails()">
+                        <span id="weather-btn-text">More Details</span>
+                    </button>
                 </div>
             </div>
         </header>
+
+        <!-- Weather Details Panel -->
+        <div id="weather-details-panel" class="weather-details-panel hidden">
+            <div class="weather-details-content">
+                <div class="weather-details-header">
+                    <h3>Weather Details</h3>
+                    <button class="close-btn" onclick="toggleWeatherDetails()">×</button>
+                </div>
+                <div class="weather-details-grid">
+                    <div class="weather-detail-item">
+                        <span class="detail-icon">🌡️</span>
+                        <span class="detail-label">Feels Like</span>
+                        <span id="feels-like" class="detail-value">--°C</span>
+                    </div>
+                    <div class="weather-detail-item">
+                        <span class="detail-icon">💧</span>
+                        <span class="detail-label">Humidity</span>
+                        <span id="humidity" class="detail-value">--%</span>
+                    </div>
+                    <div class="weather-detail-item">
+                        <span class="detail-icon">💨</span>
+                        <span class="detail-label">Wind Speed</span>
+                        <span id="wind-speed" class="detail-value">-- m/s</span>
+                    </div>
+                    <div class="weather-detail-item">
+                        <span class="detail-icon">🧭</span>
+                        <span class="detail-label">Wind Direction</span>
+                        <span id="wind-direction" class="detail-value">--</span>
+                    </div>
+                    <div class="weather-detail-item">
+                        <span class="detail-icon">📊</span>
+                        <span class="detail-label">Pressure</span>
+                        <span id="pressure" class="detail-value">-- hPa</span>
+                    </div>
+                    <div class="weather-detail-item">
+                        <span class="detail-icon">👁️</span>
+                        <span class="detail-label">Visibility</span>
+                        <span id="visibility" class="detail-value">-- km</span>
+                    </div>
+                    <div class="weather-detail-item">
+                        <span class="detail-icon">🌅</span>
+                        <span class="detail-label">Sunrise</span>
+                        <span id="sunrise" class="detail-value">--:--</span>
+                    </div>
+                    <div class="weather-detail-item">
+                        <span class="detail-icon">🌇</span>
+                        <span class="detail-label">Sunset</span>
+                        <span id="sunset" class="detail-value">--:--</span>
+                    </div>
+                </div>
+            </div>
+        </div>
 
         <!-- Main Content Area -->
         <main class="main-content">
@@ -39,9 +94,9 @@
                 </div>
                 
                 <div id="add-timetable-form" class="form-container hidden">
-                    <input type="text" id="timetable-title" placeholder="Event title" class="input-field">
-                    <input type="time" id="timetable-time" class="input-field">
-                    <input type="text" id="timetable-days" placeholder="Days (e.g., Mon, Wed, Fri)" class="input-field">
+                    <input type="text" id="timetable-title" placeholder="Event title (e.g., Morning Exercise)" class="input-field">
+                    <input type="time" id="timetable-time" class="input-field" title="Select the time for this event">
+                    <input type="text" id="timetable-days" placeholder="Days (e.g., Mon, Wed, Fri - optional)" class="input-field">
                     <div class="form-buttons">
                         <button onclick="addTimetableEvent()" class="btn-save">Save</button>
                         <button onclick="hideAddTimetableForm()" class="btn-cancel">Cancel</button>
@@ -61,8 +116,8 @@
                 </div>
 
                 <div id="add-shopping-form" class="form-container hidden">
-                    <input type="text" id="shopping-item" placeholder="Item name" class="input-field">
-                    <input type="text" id="shopping-quantity" placeholder="Quantity (optional)" class="input-field">
+                    <input type="text" id="shopping-item" placeholder="Item name (e.g., Milk, Bread)" class="input-field">
+                    <input type="text" id="shopping-quantity" placeholder="Quantity (e.g., 2L, 500g - optional)" class="input-field">
                     <div class="form-buttons">
                         <button onclick="addShoppingItem()" class="btn-save">Save</button>
                         <button onclick="hideAddShoppingForm()" class="btn-cancel">Cancel</button>

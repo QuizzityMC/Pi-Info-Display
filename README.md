@@ -58,7 +58,23 @@ The installation script will:
 - Configure kiosk mode to auto-start
 - Set up screen power management
 
-### 3. Optional: Configure Weather API
+### 3. Update Existing Installation
+
+If you already have Pi Info Display installed and want to update to the latest version:
+
+```bash
+cd ~/Pi-Info-Display
+chmod +x update.sh
+./update.sh
+```
+
+The update script will:
+- Pull the latest changes from GitHub
+- Preserve your weather API settings
+- Update dependencies
+- Restart the service
+
+### 4. Optional: Configure Weather API
 
 For live weather data (free tier available):
 
@@ -70,13 +86,13 @@ For live weather data (free tier available):
 const WEATHER_API_KEY = 'your_actual_api_key_here';
 ```
 
-### 4. Reboot
+### 5. Reboot
 
 ```bash
 sudo reboot
 ```
 
-After reboot, the kiosk will automatically start in fullscreen mode.
+After reboot, the kiosk will automatically start in fullscreen mode in landscape orientation.
 
 ## Manual Testing
 
@@ -87,7 +103,7 @@ To test the application before rebooting:
 python3 app.py
 
 # Open in a browser
-chromium-browser --kiosk http://localhost:5000
+chromium --kiosk http://localhost:5000
 ```
 
 ## Usage
@@ -97,6 +113,13 @@ The header displays:
 - Current time (updates every second)
 - Current date
 - Weather for Canberra, Australia (updates every 10 minutes)
+- **Weather Details Button**: Click to see detailed weather information including:
+  - Feels like temperature
+  - Humidity
+  - Wind speed and direction
+  - Atmospheric pressure
+  - Visibility
+  - Sunrise and sunset times
 
 ### Timetable Tab
 1. Tap "Timetable" tab
@@ -121,6 +144,7 @@ Pi-Info-Display/
 ├── requirements.txt            # Python dependencies
 ├── pi-info-display.service     # Systemd service file
 ├── install.sh                  # Installation script
+├── update.sh                   # Update script (preserves settings)
 ├── kiosk.sh                    # Kiosk mode launcher
 ├── data.json                   # Data storage (created on first run)
 ├── templates/
@@ -245,7 +269,7 @@ For live development:
 python3 app.py
 
 # Access from browser
-chromium-browser http://localhost:5000
+chromium http://localhost:5000
 ```
 
 ## Security Notes

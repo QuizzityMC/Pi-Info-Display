@@ -7,6 +7,9 @@ xset s off
 xset -dpms
 xset s noblank
 
+# Set screen to landscape orientation
+xrandr --output HDMI-1 --rotate normal 2>/dev/null || xrandr --output DSI-1 --rotate normal 2>/dev/null || true
+
 # Hide cursor after 5 seconds of inactivity
 unclutter -idle 5 &
 
@@ -14,7 +17,7 @@ unclutter -idle 5 &
 sleep 5
 
 # Launch Chromium in kiosk mode
-chromium-browser \
+chromium \
     --kiosk \
     --noerrdialogs \
     --disable-infobars \

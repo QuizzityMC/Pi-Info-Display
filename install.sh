@@ -30,7 +30,7 @@ echo "Installing required packages..."
 sudo apt-get install -y \
     python3 \
     python3-pip \
-    chromium-browser \
+    chromium \
     unclutter \
     xdotool \
     x11-xserver-utils \

@@ -105,6 +105,23 @@ def shopping_item(item_id):
                 return jsonify(data['shopping_lists'][i])
         return jsonify({'error': 'Not found'}), 404
 
+@app.route('/api/config', methods=['GET', 'POST'])
+def config():
+    """Handle configuration operations."""
+    config_file = os.path.join(os.path.dirname(__file__), 'static', 'js', 'app.js')
+    
+    if request.method == 'GET':
+        # Return current config status
+        try:
+            with open(config_file, 'r') as f:
+                content = f.read()
+                has_api_key = 'YOUR_OPENWEATHERMAP_API_KEY' not in content
+                return jsonify({'weather_configured': has_api_key})
+        except Exception:
+            return jsonify({'weather_configured': False})
+    
+    return jsonify({'error': 'Method not allowed'}), 405
+
 if __name__ == '__main__':
     # Run on all interfaces for access from browser
     app.run(host='0.0.0.0', port=5000, debug=False)

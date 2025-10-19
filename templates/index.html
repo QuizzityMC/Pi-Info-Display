@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kitchen Info Display</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <!-- Header with Time and Weather -->
+        <header class="header">
+            <div class="time-section">
+                <div id="current-time" class="time">00:00:00</div>
+                <div id="current-date" class="date">Loading...</div>
+            </div>
+            <div class="weather-section">
+                <div id="weather-info" class="weather">
+                    <div class="weather-temp">--°C</div>
+                    <div class="weather-desc">Loading weather...</div>
+                    <div class="weather-location">Canberra, Australia</div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <!-- Tab Navigation -->
+            <div class="tabs">
+                <button class="tab-button active" data-tab="timetable">Timetable</button>
+                <button class="tab-button" data-tab="shopping">Shopping List</button>
+            </div>
+
+            <!-- Timetable Tab -->
+            <div id="timetable-tab" class="tab-content active">
+                <div class="section-header">
+                    <h2>Timetable</h2>
+                    <button class="btn-add" onclick="showAddTimetableForm()">+ Add Event</button>
+                </div>
+                
+                <div id="add-timetable-form" class="form-container hidden">
+                    <input type="text" id="timetable-title" placeholder="Event title" class="input-field">
+                    <input type="time" id="timetable-time" class="input-field">
+                    <input type="text" id="timetable-days" placeholder="Days (e.g., Mon, Wed, Fri)" class="input-field">
+                    <div class="form-buttons">
+                        <button onclick="addTimetableEvent()" class="btn-save">Save</button>
+                        <button onclick="hideAddTimetableForm()" class="btn-cancel">Cancel</button>
+                    </div>
+                </div>
+
+                <div id="timetable-list" class="items-list">
+                    <!-- Timetable items will be populated here -->
+                </div>
+            </div>
+
+            <!-- Shopping List Tab -->
+            <div id="shopping-tab" class="tab-content">
+                <div class="section-header">
+                    <h2>Shopping List</h2>
+                    <button class="btn-add" onclick="showAddShoppingForm()">+ Add Item</button>
+                </div>
+
+                <div id="add-shopping-form" class="form-container hidden">
+                    <input type="text" id="shopping-item" placeholder="Item name" class="input-field">
+                    <input type="text" id="shopping-quantity" placeholder="Quantity (optional)" class="input-field">
+                    <div class="form-buttons">
+                        <button onclick="addShoppingItem()" class="btn-save">Save</button>
+                        <button onclick="hideAddShoppingForm()" class="btn-cancel">Cancel</button>
+                    </div>
+                </div>
+
+                <div id="shopping-list" class="items-list">
+                    <!-- Shopping items will be populated here -->
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>

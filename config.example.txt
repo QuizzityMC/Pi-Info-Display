@@ -1,0 +1,96 @@
+Configuration Guide for Pi Info Display
+=========================================
+
+Weather API Configuration
+-------------------------
+
+The app uses OpenWeatherMap API for weather data. Without an API key, it will show mock data.
+
+To set up live weather:
+
+1. Sign up for a free API key at: https://openweathermap.org/api
+   - Free tier includes: 1,000 API calls/day, 3-hour forecast data
+   - Sufficient for the kiosk (144 calls/day at 10-minute intervals)
+
+2. Edit static/js/app.js and replace:
+   const WEATHER_API_KEY = 'YOUR_OPENWEATHERMAP_API_KEY';
+   
+   With:
+   const WEATHER_API_KEY = 'your_actual_key_here';
+
+3. Restart the Flask service:
+   sudo systemctl restart pi-info-display.service
+
+4. Refresh the browser (or reboot)
+
+
+Changing Location
+-----------------
+
+To change from Canberra to another location:
+
+1. Find your coordinates at: https://www.latlong.net/
+
+2. Edit static/js/app.js:
+   const CANBERRA_LAT = -35.2809;  // Your latitude
+   const CANBERRA_LON = 149.1300;  // Your longitude
+
+3. Edit templates/index.html to update the display name:
+   <div class="weather-location">Your City, Country</div>
+
+4. Restart and refresh
+
+
+Display Configuration
+---------------------
+
+The UI is optimized for 800x480 (7" official Raspberry Pi Display).
+
+For different resolutions, you may need to adjust font sizes in static/css/style.css.
+
+
+Auto-start on Boot
+------------------
+
+The installation script configures auto-start via:
+1. Systemd service for Flask backend (pi-info-display.service)
+2. LXDE autostart for Chromium kiosk mode (~/.config/autostart/kiosk.desktop)
+
+To disable auto-start:
+  sudo systemctl disable pi-info-display.service
+  rm ~/.config/autostart/kiosk.desktop
+
+
+Manual Start
+------------
+
+To run manually without auto-start:
+
+1. Start Flask backend:
+   cd ~/Pi-Info-Display
+   python3 app.py
+
+2. Open in browser (new terminal):
+   chromium-browser --kiosk http://localhost:5000
+
+
+Troubleshooting
+---------------
+
+If the screen goes blank:
+- Check /boot/config.txt for hdmi settings
+- Disable screensaver: xset s off
+- Check power management: xset -dpms
+
+If touch isn't working:
+- Verify connection of display ribbon cable
+- Check dmesg for touch input device
+
+If kiosk doesn't start:
+- Check service: sudo systemctl status pi-info-display.service
+- Check logs: sudo journalctl -u pi-info-display.service
+- Verify autostart: cat ~/.config/autostart/kiosk.desktop
+
+Network issues:
+- The app works offline except for weather
+- Weather will show last cached data if offline

@@ -1,0 +1,14 @@
+[Unit]
+Description=Pi Info Display Kiosk
+After=network.target
+
+[Service]
+Type=simple
+User=pi
+WorkingDirectory=/home/pi/Pi-Info-Display
+ExecStart=/usr/bin/python3 /home/pi/Pi-Info-Display/app.py
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target

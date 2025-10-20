@@ -1,6 +1,6 @@
 // Configuration
 const API_BASE = window.location.origin;
-const WEATHER_API_KEY = 'b7c0384b14c4b0976124a64d0cfdb6e8'; // Replace with actual API key
+const WEATHER_API_KEY = 'YOUR_OPENWEATHERMAP_API_KEY'; // Replace with actual API key
 const CANBERRA_LAT = -35.2809;
 const CANBERRA_LON = 149.1300;
 

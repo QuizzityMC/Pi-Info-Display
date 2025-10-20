@@ -89,6 +89,7 @@
                 <button class="tab-button" data-tab="notes">Notes</button>
                 <button class="tab-button" data-tab="shopping">Shopping List</button>
                 <button class="tab-button" data-tab="links">Quick Links</button>
+                <button class="tab-button" data-tab="nextcloud">Nextcloud Chat</button>
             </div>
 
             <!-- Timetable Tab -->
@@ -194,7 +195,113 @@
                     <!-- Quick links will be populated here -->
                 </div>
             </div>
+
+            <!-- Nextcloud Chat Tab -->
+            <div id="nextcloud-tab" class="tab-content">
+                <div class="section-header">
+                    <h2>Nextcloud Chat</h2>
+                    <button id="nextcloud-settings-btn" class="btn-add" onclick="toggleNextcloudSettings()">⚙️ Settings</button>
+                </div>
+
+                <!-- Configuration Form -->
+                <div id="nextcloud-config-form" class="form-container hidden">
+                    <h3 style="margin-bottom: 15px; color: #333;">Nextcloud Configuration</h3>
+                    <input type="url" id="nextcloud-server" placeholder="Server URL (e.g., https://cloud.thalizar.info)" class="input-field keyboard-enabled">
+                    <input type="text" id="nextcloud-username" placeholder="Username" class="input-field keyboard-enabled">
+                    <input type="password" id="nextcloud-password" placeholder="App Password" class="input-field keyboard-enabled">
+                    
+                    <div id="conversation-selector" class="hidden" style="margin-top: 15px;">
+                        <label style="display: block; margin-bottom: 8px; color: #333; font-weight: 600;">Select Conversation:</label>
+                        <select id="conversation-select" class="input-field">
+                            <option value="">Loading conversations...</option>
+                        </select>
+                    </div>
+
+                    <div class="form-buttons">
+                        <button onclick="saveNextcloudConfig()" class="btn-save">Save & Connect</button>
+                        <button onclick="hideNextcloudSettings()" class="btn-cancel">Cancel</button>
+                        <button onclick="disconnectNextcloud()" class="btn-delete" style="margin-left: auto;">Disconnect</button>
+                    </div>
+                </div>
+
+                <!-- Chat Interface -->
+                <div id="nextcloud-chat-container" class="nextcloud-chat-container hidden">
+                    <div id="nextcloud-messages" class="nextcloud-messages">
+                        <!-- Messages will be populated here -->
+                    </div>
+                    <div class="nextcloud-input-container">
+                        <input type="text" id="nextcloud-message-input" placeholder="Type a message..." class="input-field keyboard-enabled" onkeypress="handleNextcloudMessageKeypress(event)">
+                        <button onclick="sendNextcloudMessage()" class="btn-save" style="margin-left: 10px;">Send</button>
+                    </div>
+                </div>
+
+                <!-- Not Configured Message -->
+                <div id="nextcloud-not-configured" class="empty-state">
+                    <p>Nextcloud Chat is not configured.</p>
+                    <p>Click "⚙️ Settings" above to set up your connection.</p>
+                </div>
+            </div>
         </main>
+    </div>
+
+    <!-- Virtual Keyboard -->
+    <div id="virtual-keyboard" class="virtual-keyboard hidden">
+        <div class="keyboard-row">
+            <button class="keyboard-key" onclick="typeKey('1')">1</button>
+            <button class="keyboard-key" onclick="typeKey('2')">2</button>
+            <button class="keyboard-key" onclick="typeKey('3')">3</button>
+            <button class="keyboard-key" onclick="typeKey('4')">4</button>
+            <button class="keyboard-key" onclick="typeKey('5')">5</button>
+            <button class="keyboard-key" onclick="typeKey('6')">6</button>
+            <button class="keyboard-key" onclick="typeKey('7')">7</button>
+            <button class="keyboard-key" onclick="typeKey('8')">8</button>
+            <button class="keyboard-key" onclick="typeKey('9')">9</button>
+            <button class="keyboard-key" onclick="typeKey('0')">0</button>
+            <button class="keyboard-key keyboard-key-wide" onclick="backspaceKey()">⌫</button>
+        </div>
+        <div class="keyboard-row">
+            <button class="keyboard-key" onclick="typeKey('q')">q</button>
+            <button class="keyboard-key" onclick="typeKey('w')">w</button>
+            <button class="keyboard-key" onclick="typeKey('e')">e</button>
+            <button class="keyboard-key" onclick="typeKey('r')">r</button>
+            <button class="keyboard-key" onclick="typeKey('t')">t</button>
+            <button class="keyboard-key" onclick="typeKey('y')">y</button>
+            <button class="keyboard-key" onclick="typeKey('u')">u</button>
+            <button class="keyboard-key" onclick="typeKey('i')">i</button>
+            <button class="keyboard-key" onclick="typeKey('o')">o</button>
+            <button class="keyboard-key" onclick="typeKey('p')">p</button>
+            <button class="keyboard-key" onclick="typeKey('-')">-</button>
+        </div>
+        <div class="keyboard-row">
+            <button class="keyboard-key" onclick="typeKey('a')">a</button>
+            <button class="keyboard-key" onclick="typeKey('s')">s</button>
+            <button class="keyboard-key" onclick="typeKey('d')">d</button>
+            <button class="keyboard-key" onclick="typeKey('f')">f</button>
+            <button class="keyboard-key" onclick="typeKey('g')">g</button>
+            <button class="keyboard-key" onclick="typeKey('h')">h</button>
+            <button class="keyboard-key" onclick="typeKey('j')">j</button>
+            <button class="keyboard-key" onclick="typeKey('k')">k</button>
+            <button class="keyboard-key" onclick="typeKey('l')">l</button>
+            <button class="keyboard-key" onclick="typeKey(':')">:</button>
+            <button class="keyboard-key" onclick="typeKey('/')>/</button>
+        </div>
+        <div class="keyboard-row">
+            <button class="keyboard-key keyboard-key-wide" onclick="toggleShift()">⇧ Shift</button>
+            <button class="keyboard-key" onclick="typeKey('z')">z</button>
+            <button class="keyboard-key" onclick="typeKey('x')">x</button>
+            <button class="keyboard-key" onclick="typeKey('c')">c</button>
+            <button class="keyboard-key" onclick="typeKey('v')">v</button>
+            <button class="keyboard-key" onclick="typeKey('b')">b</button>
+            <button class="keyboard-key" onclick="typeKey('n')">n</button>
+            <button class="keyboard-key" onclick="typeKey('m')">m</button>
+            <button class="keyboard-key" onclick="typeKey('.')">.</button>
+            <button class="keyboard-key" onclick="typeKey('@')">@</button>
+        </div>
+        <div class="keyboard-row">
+            <button class="keyboard-key keyboard-key-wide" onclick="toggleSymbols()">123</button>
+            <button class="keyboard-key keyboard-key-space" onclick="typeKey(' ')">Space</button>
+            <button class="keyboard-key keyboard-key-wide" onclick="hideKeyboard()">Hide</button>
+        </div>
     </div>
 
     <script src="{{ url_for('static', filename='js/app.js') }}"></script>

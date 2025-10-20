@@ -11,6 +11,8 @@ A touchscreen-friendly information display for Raspberry Pi, designed for kitche
 - **Notes & Reminders**: Create and manage notes with timestamps
 - **Shopping List**: Track grocery items with checkbox completion
 - **Quick Links**: Store and access frequently used websites
+- **Nextcloud Chat**: Communicate via Nextcloud Talk with one selected conversation
+- **Virtual Keyboard**: Onscreen keyboard for all input fields (touchscreen-friendly)
 - **Kiosk Mode**: Auto-starts at boot in fullscreen mode (desktop and CLI mode support)
 - **Touch-Optimized UI**: Large buttons and controls for touchscreen use
 
@@ -39,7 +41,12 @@ View and manage your shopping items with quantities.
 ### Weather Details
 Click "More Details" to see comprehensive weather information including humidity, wind, pressure, and more.
 
-![Weather Details](https://github.com/user-attachments/assets/41c1221e-a7c8-4846-ab95-747ffafe454a)
+![Weather Details](https://github.com/user-attachments/assets/c06f2042-83ce-435c-b692-2569155837be)
+
+### Nextcloud Chat
+Communicate with a single Nextcloud Talk conversation directly from the kiosk.
+
+![Nextcloud Chat with Virtual Keyboard](https://github.com/user-attachments/assets/6ecc8258-0710-4213-8dae-4c3738b9b03c)
 
 ## Hardware Requirements
 
@@ -224,6 +231,26 @@ The header displays:
 5. Click on links to open them in a new tab
 6. Delete links by clicking the × button
 
+### Nextcloud Chat Tab
+1. Tap "Nextcloud Chat" tab
+2. Tap "⚙️ Settings" button
+3. Enter your Nextcloud server URL (e.g., https://cloud.thalizar.info)
+4. Enter your Nextcloud username
+5. Enter an app password (generate one in Nextcloud Settings → Security)
+6. Tap "Save & Connect"
+7. Select a conversation from the dropdown
+8. Tap "Connect to Conversation"
+9. View messages and send new messages
+10. Messages update automatically every 10 seconds
+
+**Virtual Keyboard:**
+- The virtual keyboard appears automatically when you tap any text field
+- Use letter keys, numbers, and basic symbols
+- Tap "⇧ Shift" for uppercase letters
+- Tap "⌫" to delete characters
+- Tap "Hide" to dismiss the keyboard
+- Works with all input fields throughout the application
+
 ## File Structure
 
 ```
@@ -272,6 +299,12 @@ The Flask backend provides REST API endpoints:
 - `PUT /api/quick_links/<id>` - Update quick link
 - `DELETE /api/quick_links/<id>` - Delete quick link
 - `GET /images/<filename>` - Serve images from static/images directory
+- `GET /api/nextcloud/config` - Get Nextcloud configuration (without password)
+- `POST /api/nextcloud/config` - Save Nextcloud configuration
+- `DELETE /api/nextcloud/config` - Delete Nextcloud configuration
+- `GET /api/nextcloud/conversations` - Get list of Nextcloud Talk conversations
+- `GET /api/nextcloud/messages` - Get messages from selected conversation
+- `POST /api/nextcloud/messages` - Send a message to selected conversation
 
 ## Customization
 
@@ -388,10 +421,12 @@ chromium http://localhost:5000
 
 ## Security Notes
 
-- The Flask server runs on localhost only (not accessible from network)
-- No authentication required (designed for local use)
-- Data stored in plain text JSON file
-- For internet-exposed deployments, add authentication
+- The Flask server runs on all interfaces (0.0.0.0) to allow network access
+- No authentication required for the web interface (designed for local/home network use)
+- Data stored in plain text JSON file (including Nextcloud app passwords)
+- Nextcloud app passwords are stored locally - use dedicated app passwords, not your main password
+- For internet-exposed deployments, add authentication and use HTTPS
+- Keep your Raspberry Pi on a trusted network
 
 ## Contributing
 

@@ -5,10 +5,13 @@ A touchscreen-friendly information display for Raspberry Pi, designed for kitche
 ## Features
 
 - **Real-time Clock**: Always-on time and date display
-- **Weather Display**: Live weather for Canberra, Australia
+- **Weather Display**: Live weather for Canberra, Australia (with detailed weather information)
 - **Timetable Manager**: Create and manage daily schedules and events
+- **School Timetable**: Display a custom timetable image (upload timetable.png)
+- **Notes & Reminders**: Create and manage notes with timestamps
 - **Shopping List**: Track grocery items with checkbox completion
-- **Kiosk Mode**: Auto-starts at boot in fullscreen mode
+- **Quick Links**: Store and access frequently used websites
+- **Kiosk Mode**: Auto-starts at boot in fullscreen mode (desktop and CLI mode support)
 - **Touch-Optimized UI**: Large buttons and controls for touchscreen use
 
 ## Screenshots
@@ -56,8 +59,9 @@ Click "More Details" to see comprehensive weather information including humidity
 
 ### 1. Prepare Your Raspberry Pi
 
-Flash Raspberry Pi OS (Desktop version) onto your SD card using Raspberry Pi Imager:
-- Choose "Raspberry Pi OS (64-bit)" with desktop
+Flash Raspberry Pi OS (Desktop or Lite version) onto your SD card using Raspberry Pi Imager:
+- **Desktop version**: Choose "Raspberry Pi OS (64-bit)" with desktop for graphical interface
+- **Lite version**: Choose "Raspberry Pi OS Lite (64-bit)" for headless/CLI mode
 - Configure WiFi and enable SSH if needed
 - Boot up your Raspberry Pi
 
@@ -82,8 +86,9 @@ The installation script will:
 - Update system packages
 - Install required dependencies (Python, Chromium, etc.)
 - Set up the Flask backend as a system service
-- Configure kiosk mode to auto-start
+- Configure kiosk mode to auto-start in both desktop and CLI modes
 - Set up screen power management
+- Configure CLI mode auto-start (runs automatically on tty1)
 
 ### 3. Update Existing Installation
 
@@ -113,13 +118,46 @@ For live weather data (free tier available):
 const WEATHER_API_KEY = 'your_actual_api_key_here';
 ```
 
-### 5. Reboot
+### 5. Optional: Add School Timetable Image
+
+To display a school timetable:
+
+1. Create or save your timetable as an image
+2. Name it `timetable.png`
+3. Upload to: `~/Pi-Info-Display/static/images/`
+4. Access it from the "School Timetable" tab in the app
+
+### 6. Reboot
 
 ```bash
 sudo reboot
 ```
 
-After reboot, the kiosk will automatically start in fullscreen mode in landscape orientation.
+After reboot:
+- **Desktop mode**: The kiosk will automatically start in fullscreen mode
+- **CLI mode**: The kiosk will auto-start with X server on tty1
+- **Remote access**: Access from any browser at `http://<pi-ip-address>:5000`
+
+## Auto-Start Modes
+
+The Pi Info Display supports multiple auto-start configurations:
+
+### Desktop Mode (Default)
+- Automatically configured during installation
+- Kiosk starts via `~/.config/autostart/kiosk.desktop`
+- Best for Raspberry Pi OS with Desktop
+
+### CLI Mode (Headless)
+- Automatically configured during installation
+- Kiosk starts via `~/.bashrc` integration
+- Runs `startx` with the kiosk on tty1
+- Best for Raspberry Pi OS Lite
+- Requires X server packages (installed by install.sh)
+
+### Remote Access Only
+- Flask backend runs as a systemd service
+- Access the display from any browser on your network
+- Visit `http://<raspberry-pi-ip>:5000`
 
 ## Manual Testing
 
@@ -155,6 +193,21 @@ The header displays:
 4. Tap "Save"
 5. Events are sorted by time automatically
 
+### School Timetable Tab
+1. Save your school timetable as `timetable.png`
+2. Upload it to `~/Pi-Info-Display/static/images/`
+3. Tap "School Timetable" tab
+4. Click "🔄 Refresh" to load the image
+5. Your timetable image will be displayed full-width
+
+### Notes & Reminders Tab
+1. Tap "Notes" tab
+2. Tap "+ Add Note" button
+3. Enter note title and content
+4. Tap "Save"
+5. Notes are sorted by creation time (newest first)
+6. Delete notes when no longer needed
+
 ### Shopping List Tab
 1. Tap "Shopping List" tab
 2. Tap "+ Add Item" button
@@ -162,6 +215,14 @@ The header displays:
 4. Tap "Save"
 5. Check off items as you shop
 6. Delete completed items
+
+### Quick Links Tab
+1. Tap "Quick Links" tab
+2. Tap "+ Add Link" button
+3. Enter link name and URL
+4. Tap "Save"
+5. Click on links to open them in a new tab
+6. Delete links by clicking the × button
 
 ## File Structure
 
@@ -172,15 +233,20 @@ Pi-Info-Display/
 ├── pi-info-display.service     # Systemd service file
 ├── install.sh                  # Installation script
 ├── update.sh                   # Update script (preserves settings)
-├── kiosk.sh                    # Kiosk mode launcher
+├── kiosk.sh                    # Kiosk mode launcher (desktop)
+├── kiosk-cli.sh                # CLI mode kiosk launcher
+├── auto-start-x.sh             # Auto-start X server in CLI mode
 ├── data.json                   # Data storage (created on first run)
 ├── templates/
 │   └── index.html              # Main HTML template
 └── static/
     ├── css/
     │   └── style.css           # Styles (touch-optimized)
-    └── js/
-        └── app.js              # Frontend application logic
+    ├── js/
+    │   └── app.js              # Frontend application logic
+    └── images/
+        ├── README.md           # Instructions for timetable.png
+        └── timetable.png       # School timetable image (user-provided)
 ```
 
 ## API Endpoints
@@ -197,6 +263,15 @@ The Flask backend provides REST API endpoints:
 - `POST /api/shopping` - Create new shopping item
 - `PUT /api/shopping/<id>` - Update shopping item
 - `DELETE /api/shopping/<id>` - Delete shopping item
+- `GET /api/notes` - Get all notes
+- `POST /api/notes` - Create new note
+- `PUT /api/notes/<id>` - Update note
+- `DELETE /api/notes/<id>` - Delete note
+- `GET /api/quick_links` - Get all quick links
+- `POST /api/quick_links` - Create new quick link
+- `PUT /api/quick_links/<id>` - Update quick link
+- `DELETE /api/quick_links/<id>` - Delete quick link
+- `GET /images/<filename>` - Serve images from static/images directory
 
 ## Customization
 
@@ -249,6 +324,18 @@ Check autostart configuration:
 ```bash
 cat ~/.config/autostart/kiosk.desktop
 ```
+
+For CLI mode, check if auto-start is configured:
+```bash
+grep "auto-start-x.sh" ~/.bashrc
+```
+
+### CLI Mode Not Starting Display
+
+If you're in CLI mode and the display doesn't start automatically:
+1. Ensure you're on tty1 (the main console)
+2. Check if X server packages are installed: `sudo apt-get install xserver-xorg xinit`
+3. Manually start with: `startx ~/Pi-Info-Display/kiosk.sh`
 
 ### Screen Blanking
 

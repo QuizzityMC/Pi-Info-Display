@@ -9,6 +9,8 @@ WorkingDirectory=/home/pi/Pi-Info-Display
 ExecStart=/usr/bin/python3 /home/pi/Pi-Info-Display/app.py
 Restart=always
 RestartSec=10
+StandardOutput=journal
+StandardError=journal
 
 [Install]
 WantedBy=multi-user.target

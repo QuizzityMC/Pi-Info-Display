@@ -516,3 +516,172 @@ body {
         min-height: 50px;
     }
 }
+
+/* School Timetable */
+.school-timetable-container {
+    width: 100%;
+    max-width: 100%;
+}
+
+.timetable-image {
+    width: 100%;
+    height: auto;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.info-message {
+    font-size: 18px;
+    color: #666;
+    margin-bottom: 15px;
+}
+
+.instruction-list {
+    font-size: 16px;
+    color: #666;
+    line-height: 1.8;
+    padding-left: 30px;
+}
+
+.instruction-list li {
+    margin-bottom: 10px;
+}
+
+.instruction-list code {
+    background: #f3f4f6;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-family: 'Courier New', monospace;
+    font-size: 14px;
+}
+
+/* Notes Specific */
+.note-item {
+    display: block;
+}
+
+.note-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: #333;
+    margin-bottom: 10px;
+}
+
+.note-content {
+    font-size: 16px;
+    color: #555;
+    line-height: 1.5;
+    margin-bottom: 8px;
+    white-space: pre-wrap;
+}
+
+.note-date {
+    font-size: 14px;
+    color: #999;
+    font-style: italic;
+}
+
+.textarea-field {
+    resize: vertical;
+    min-height: 100px;
+    font-family: inherit;
+}
+
+/* Quick Links */
+.links-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 15px;
+}
+
+.link-card {
+    position: relative;
+    background: white;
+    border: 2px solid #e5e7eb;
+    border-radius: 12px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.link-card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+}
+
+.link-card:active {
+    transform: translateY(0) scale(0.98);
+}
+
+.link-card-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 25px 15px;
+    text-decoration: none;
+    color: inherit;
+    gap: 10px;
+    min-height: 120px;
+}
+
+.link-icon {
+    font-size: 40px;
+}
+
+.link-name {
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
+    text-align: center;
+    word-break: break-word;
+}
+
+.link-delete-btn {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(239, 68, 68, 0.9);
+    color: white;
+    font-size: 24px;
+    line-height: 1;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    padding: 0;
+}
+
+.link-delete-btn:hover {
+    background: #dc2626;
+    transform: scale(1.1);
+}
+
+.link-delete-btn:active {
+    transform: scale(0.9);
+}
+
+@media (max-width: 800px) {
+    .links-grid {
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 12px;
+    }
+    
+    .link-card-content {
+        padding: 20px 10px;
+        min-height: 100px;
+    }
+    
+    .link-icon {
+        font-size: 32px;
+    }
+    
+    .link-name {
+        font-size: 14px;
+    }
+}

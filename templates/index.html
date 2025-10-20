@@ -83,7 +83,10 @@
             <!-- Tab Navigation -->
             <div class="tabs">
                 <button class="tab-button active" data-tab="timetable">Timetable</button>
+                <button class="tab-button" data-tab="school-timetable">School Timetable</button>
+                <button class="tab-button" data-tab="notes">Notes</button>
                 <button class="tab-button" data-tab="shopping">Shopping List</button>
+                <button class="tab-button" data-tab="links">Quick Links</button>
             </div>
 
             <!-- Timetable Tab -->
@@ -126,6 +129,67 @@
 
                 <div id="shopping-list" class="items-list">
                     <!-- Shopping items will be populated here -->
+                </div>
+            </div>
+
+            <!-- School Timetable Tab -->
+            <div id="school-timetable-tab" class="tab-content">
+                <div class="section-header">
+                    <h2>School Timetable</h2>
+                    <button class="btn-add" onclick="refreshSchoolTimetable()">🔄 Refresh</button>
+                </div>
+                
+                <div class="school-timetable-container">
+                    <div id="school-timetable-display">
+                        <p class="info-message">To display your school timetable:</p>
+                        <ol class="instruction-list">
+                            <li>Save your timetable as <strong>timetable.png</strong></li>
+                            <li>Upload it to: <code>~/Pi-Info-Display/static/images/</code></li>
+                            <li>Click the Refresh button above</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Notes Tab -->
+            <div id="notes-tab" class="tab-content">
+                <div class="section-header">
+                    <h2>Notes & Reminders</h2>
+                    <button class="btn-add" onclick="showAddNoteForm()">+ Add Note</button>
+                </div>
+
+                <div id="add-note-form" class="form-container hidden">
+                    <input type="text" id="note-title" placeholder="Note title" class="input-field">
+                    <textarea id="note-content" placeholder="Note content..." class="input-field textarea-field" rows="4"></textarea>
+                    <div class="form-buttons">
+                        <button onclick="addNote()" class="btn-save">Save</button>
+                        <button onclick="hideAddNoteForm()" class="btn-cancel">Cancel</button>
+                    </div>
+                </div>
+
+                <div id="notes-list" class="items-list">
+                    <!-- Notes will be populated here -->
+                </div>
+            </div>
+
+            <!-- Quick Links Tab -->
+            <div id="links-tab" class="tab-content">
+                <div class="section-header">
+                    <h2>Quick Links</h2>
+                    <button class="btn-add" onclick="showAddLinkForm()">+ Add Link</button>
+                </div>
+
+                <div id="add-link-form" class="form-container hidden">
+                    <input type="text" id="link-name" placeholder="Link name (e.g., School Portal)" class="input-field">
+                    <input type="url" id="link-url" placeholder="URL (e.g., https://example.com)" class="input-field">
+                    <div class="form-buttons">
+                        <button onclick="addQuickLink()" class="btn-save">Save</button>
+                        <button onclick="hideAddLinkForm()" class="btn-cancel">Cancel</button>
+                    </div>
+                </div>
+
+                <div id="links-list" class="links-grid">
+                    <!-- Quick links will be populated here -->
                 </div>
             </div>
         </main>

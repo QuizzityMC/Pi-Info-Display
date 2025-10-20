@@ -6,7 +6,7 @@ Serves the web interface and provides API endpoints for data persistence.
 import os
 import json
 from datetime import datetime
-from flask import Flask, render_template, jsonify, request
+from flask import Flask, render_template, jsonify, request, send_from_directory
 from flask_cors import CORS
 
 app = Flask(__name__)
@@ -22,7 +22,9 @@ def load_data():
             return json.load(f)
     return {
         'timetables': [],
-        'shopping_lists': []
+        'shopping_lists': [],
+        'notes': [],
+        'quick_links': []
     }
 
 def save_data(data):
@@ -121,6 +123,76 @@ def config():
             return jsonify({'weather_configured': False})
     
     return jsonify({'error': 'Method not allowed'}), 405
+
+@app.route('/api/notes', methods=['GET', 'POST'])
+def notes():
+    """Handle notes operations."""
+    data = load_data()
+    
+    if request.method == 'POST':
+        new_note = request.json
+        new_note['id'] = datetime.now().isoformat()
+        new_note['created_at'] = datetime.now().isoformat()
+        data['notes'].append(new_note)
+        save_data(data)
+        return jsonify(new_note), 201
+    
+    return jsonify(data.get('notes', []))
+
+@app.route('/api/notes/<note_id>', methods=['DELETE', 'PUT'])
+def note_item(note_id):
+    """Handle individual note operations."""
+    data = load_data()
+    
+    if request.method == 'DELETE':
+        data['notes'] = [n for n in data.get('notes', []) if n['id'] != note_id]
+        save_data(data)
+        return '', 204
+    
+    if request.method == 'PUT':
+        for i, n in enumerate(data.get('notes', [])):
+            if n['id'] == note_id:
+                data['notes'][i] = {**n, **request.json, 'id': note_id}
+                save_data(data)
+                return jsonify(data['notes'][i])
+        return jsonify({'error': 'Not found'}), 404
+
+@app.route('/api/quick_links', methods=['GET', 'POST'])
+def quick_links():
+    """Handle quick links operations."""
+    data = load_data()
+    
+    if request.method == 'POST':
+        new_link = request.json
+        new_link['id'] = datetime.now().isoformat()
+        data['quick_links'].append(new_link)
+        save_data(data)
+        return jsonify(new_link), 201
+    
+    return jsonify(data.get('quick_links', []))
+
+@app.route('/api/quick_links/<link_id>', methods=['DELETE', 'PUT'])
+def quick_link_item(link_id):
+    """Handle individual quick link operations."""
+    data = load_data()
+    
+    if request.method == 'DELETE':
+        data['quick_links'] = [l for l in data.get('quick_links', []) if l['id'] != link_id]
+        save_data(data)
+        return '', 204
+    
+    if request.method == 'PUT':
+        for i, l in enumerate(data.get('quick_links', [])):
+            if l['id'] == link_id:
+                data['quick_links'][i] = {**l, **request.json, 'id': link_id}
+                save_data(data)
+                return jsonify(data['quick_links'][i])
+        return jsonify({'error': 'Not found'}), 404
+
+@app.route('/images/<path:filename>')
+def serve_image(filename):
+    """Serve images from the static/images directory."""
+    return send_from_directory(os.path.join(app.root_path, 'static', 'images'), filename)
 
 if __name__ == '__main__':
     # Run on all interfaces for access from browser

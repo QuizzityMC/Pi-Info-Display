@@ -257,8 +257,8 @@ def nextcloud_conversations():
             return jsonify(simplified)
         else:
             return jsonify({'error': 'Failed to fetch conversations', 'status': response.status_code}), 400
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
+    except Exception:
+        return jsonify({'error': 'Failed to connect to Nextcloud server'}), 500
 
 @app.route('/api/nextcloud/messages', methods=['GET', 'POST'])
 def nextcloud_messages():
@@ -298,8 +298,8 @@ def nextcloud_messages():
                 return jsonify(simplified)
             else:
                 return jsonify({'error': 'Failed to fetch messages', 'status': response.status_code}), 400
-        except Exception as e:
-            return jsonify({'error': str(e)}), 500
+        except Exception:
+            return jsonify({'error': 'Failed to connect to Nextcloud server'}), 500
     
     if request.method == 'POST':
         message = request.json.get('message', '').strip()
@@ -319,8 +319,8 @@ def nextcloud_messages():
                 return jsonify({'success': True}), 201
             else:
                 return jsonify({'error': 'Failed to send message', 'status': response.status_code}), 400
-        except Exception as e:
-            return jsonify({'error': str(e)}), 500
+        except Exception:
+            return jsonify({'error': 'Failed to connect to Nextcloud server'}), 500
 
 if __name__ == '__main__':
     # Run on all interfaces for access from browser

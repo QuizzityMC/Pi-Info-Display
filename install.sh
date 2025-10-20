@@ -43,6 +43,8 @@ pip3 install -r "$INSTALL_DIR/requirements.txt"
 # Make scripts executable
 echo "Setting script permissions..."
 chmod +x "$INSTALL_DIR/kiosk.sh"
+chmod +x "$INSTALL_DIR/kiosk-cli.sh"
+chmod +x "$INSTALL_DIR/auto-start-x.sh"
 chmod +x "$INSTALL_DIR/app.py"
 
 # Install systemd service for Flask backend
@@ -86,7 +88,21 @@ EOF'
 
 # Create empty data file if it doesn't exist
 touch "$INSTALL_DIR/data.json"
-echo '{"timetables":[],"shopping_lists":[]}' > "$INSTALL_DIR/data.json"
+echo '{"timetables":[],"shopping_lists":[],"notes":[],"quick_links":[]}' > "$INSTALL_DIR/data.json"
+
+# Configure CLI mode auto-start
+echo ""
+echo "Configuring CLI mode auto-start..."
+if ! grep -q "auto-start-x.sh" ~/.bashrc; then
+    echo "" >> ~/.bashrc
+    echo "# Auto-start Pi Info Display in CLI mode" >> ~/.bashrc
+    echo "if [ -f \"$INSTALL_DIR/auto-start-x.sh\" ]; then" >> ~/.bashrc
+    echo "    . \"$INSTALL_DIR/auto-start-x.sh\"" >> ~/.bashrc
+    echo "fi" >> ~/.bashrc
+    echo "  CLI auto-start configured in .bashrc"
+else
+    echo "  CLI auto-start already configured"
+fi
 
 echo ""
 echo "==================================="
@@ -98,11 +114,24 @@ echo ""
 echo "Backend service status:"
 sudo systemctl status pi-info-display.service --no-pager | head -10
 echo ""
+echo "Features installed:"
+echo "  ✓ Timetable management"
+echo "  ✓ Shopping list"
+echo "  ✓ School timetable image display (add timetable.png to static/images/)"
+echo "  ✓ Notes & reminders"
+echo "  ✓ Quick links"
+echo "  ✓ Weather display"
+echo "  ✓ Auto-start in desktop mode"
+echo "  ✓ Auto-start in CLI mode (via .bashrc)"
+echo ""
 echo "To complete the setup:"
 echo "1. Optional: Add your OpenWeatherMap API key to static/js/app.js"
 echo "   (Get a free key from: https://openweathermap.org/api)"
-echo "2. Reboot your Raspberry Pi: sudo reboot"
+echo "2. Optional: Upload timetable.png to static/images/ for school timetable display"
+echo "3. Reboot your Raspberry Pi: sudo reboot"
 echo ""
-echo "After reboot, the kiosk will start automatically."
-echo "The display will be available at: http://localhost:5000"
+echo "After reboot:"
+echo "  - In desktop mode: Kiosk will start automatically"
+echo "  - In CLI mode: Will auto-start X and kiosk on tty1"
+echo "  - Access from browser at: http://localhost:5000"
 echo ""

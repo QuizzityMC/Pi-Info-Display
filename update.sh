@@ -55,6 +55,8 @@ pip3 install -r "$INSTALL_DIR/requirements.txt" --upgrade
 # Make scripts executable
 echo "Setting script permissions..."
 chmod +x "$INSTALL_DIR/kiosk.sh"
+chmod +x "$INSTALL_DIR/kiosk-cli.sh"
+chmod +x "$INSTALL_DIR/auto-start-x.sh"
 chmod +x "$INSTALL_DIR/app.py"
 chmod +x "$INSTALL_DIR/update.sh"
 

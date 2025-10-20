@@ -7,6 +7,8 @@ const CANBERRA_LON = 149.1300;
 // State
 let timetableData = [];
 let shoppingData = [];
+let notesData = [];
+let quickLinksData = [];
 let weatherDetailsVisible = false;
 let currentWeatherData = null;
 
@@ -160,8 +162,13 @@ async function loadData() {
         const data = await response.json();
         timetableData = data.timetables || [];
         shoppingData = data.shopping_lists || [];
+        notesData = data.notes || [];
+        quickLinksData = data.quick_links || [];
         renderTimetable();
         renderShopping();
+        renderNotes();
+        renderQuickLinks();
+        checkSchoolTimetable();
     } catch (error) {
         console.error('Error loading data:', error);
     }
@@ -357,4 +364,206 @@ function escapeHtml(text) {
     const div = document.createElement('div');
     div.textContent = text;
     return div.innerHTML;
+}
+
+// School Timetable Functions
+function checkSchoolTimetable() {
+    const img = new Image();
+    img.onload = function() {
+        displaySchoolTimetable(true);
+    };
+    img.onerror = function() {
+        displaySchoolTimetable(false);
+    };
+    img.src = `${API_BASE}/images/timetable.png?t=${Date.now()}`;
+}
+
+function displaySchoolTimetable(exists) {
+    const container = document.getElementById('school-timetable-display');
+    
+    if (exists) {
+        container.innerHTML = `
+            <img src="${API_BASE}/images/timetable.png?t=${Date.now()}" 
+                 alt="School Timetable" 
+                 class="timetable-image">
+        `;
+    } else {
+        container.innerHTML = `
+            <p class="info-message">To display your school timetable:</p>
+            <ol class="instruction-list">
+                <li>Save your timetable as <strong>timetable.png</strong></li>
+                <li>Upload it to: <code>~/Pi-Info-Display/static/images/</code></li>
+                <li>Click the Refresh button above</li>
+            </ol>
+        `;
+    }
+}
+
+function refreshSchoolTimetable() {
+    checkSchoolTimetable();
+}
+
+// Notes Functions
+function showAddNoteForm() {
+    document.getElementById('add-note-form').classList.remove('hidden');
+}
+
+function hideAddNoteForm() {
+    document.getElementById('add-note-form').classList.add('hidden');
+    document.getElementById('note-title').value = '';
+    document.getElementById('note-content').value = '';
+}
+
+async function addNote() {
+    const title = document.getElementById('note-title').value.trim();
+    const content = document.getElementById('note-content').value.trim();
+    
+    if (!title || !content) {
+        alert('Please fill in both title and content');
+        return;
+    }
+    
+    try {
+        const response = await fetch(`${API_BASE}/api/notes`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ title, content })
+        });
+        
+        if (response.ok) {
+            hideAddNoteForm();
+            await loadData();
+        }
+    } catch (error) {
+        console.error('Error adding note:', error);
+        alert('Failed to add note');
+    }
+}
+
+async function deleteNote(id) {
+    if (!confirm('Delete this note?')) return;
+    
+    try {
+        const response = await fetch(`${API_BASE}/api/notes/${id}`, {
+            method: 'DELETE'
+        });
+        
+        if (response.ok) {
+            await loadData();
+        }
+    } catch (error) {
+        console.error('Error deleting note:', error);
+        alert('Failed to delete note');
+    }
+}
+
+function renderNotes() {
+    const container = document.getElementById('notes-list');
+    
+    if (notesData.length === 0) {
+        container.innerHTML = '<div class="empty-state">No notes yet. Add your first note!</div>';
+        return;
+    }
+    
+    // Sort by creation time (newest first)
+    const sorted = [...notesData].sort((a, b) => b.created_at.localeCompare(a.created_at));
+    
+    container.innerHTML = sorted.map(note => `
+        <div class="item note-item">
+            <div class="item-content">
+                <div class="note-title">${escapeHtml(note.title)}</div>
+                <div class="note-content">${escapeHtml(note.content)}</div>
+                <div class="note-date">${new Date(note.created_at).toLocaleDateString('en-AU', { 
+                    month: 'short', 
+                    day: 'numeric', 
+                    hour: '2-digit', 
+                    minute: '2-digit' 
+                })}</div>
+            </div>
+            <div class="item-actions">
+                <button class="btn-delete" onclick="deleteNote('${note.id}')">Delete</button>
+            </div>
+        </div>
+    `).join('');
+}
+
+// Quick Links Functions
+function showAddLinkForm() {
+    document.getElementById('add-link-form').classList.remove('hidden');
+}
+
+function hideAddLinkForm() {
+    document.getElementById('add-link-form').classList.add('hidden');
+    document.getElementById('link-name').value = '';
+    document.getElementById('link-url').value = '';
+}
+
+async function addQuickLink() {
+    const name = document.getElementById('link-name').value.trim();
+    const url = document.getElementById('link-url').value.trim();
+    
+    if (!name || !url) {
+        alert('Please fill in both name and URL');
+        return;
+    }
+    
+    // Basic URL validation
+    try {
+        new URL(url);
+    } catch (e) {
+        alert('Please enter a valid URL (e.g., https://example.com)');
+        return;
+    }
+    
+    try {
+        const response = await fetch(`${API_BASE}/api/quick_links`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name, url })
+        });
+        
+        if (response.ok) {
+            hideAddLinkForm();
+            await loadData();
+        }
+    } catch (error) {
+        console.error('Error adding quick link:', error);
+        alert('Failed to add link');
+    }
+}
+
+async function deleteQuickLink(id) {
+    if (!confirm('Delete this link?')) return;
+    
+    try {
+        const response = await fetch(`${API_BASE}/api/quick_links/${id}`, {
+            method: 'DELETE'
+        });
+        
+        if (response.ok) {
+            await loadData();
+        }
+    } catch (error) {
+        console.error('Error deleting link:', error);
+        alert('Failed to delete link');
+    }
+}
+
+function renderQuickLinks() {
+    const container = document.getElementById('links-list');
+    
+    if (quickLinksData.length === 0) {
+        container.innerHTML = '<div class="empty-state">No quick links yet. Add your first link!</div>';
+        return;
+    }
+    
+    container.innerHTML = quickLinksData.map(link => `
+        <div class="link-card">
+            <a href="${escapeHtml(link.url)}" target="_blank" class="link-card-content">
+                <div class="link-icon">🔗</div>
+                <div class="link-name">${escapeHtml(link.name)}</div>
+            </a>
+            <button class="link-delete-btn" onclick="deleteQuickLink('${link.id}'); event.stopPropagation();">×</button>
+        </div>
+    `).join('');
 }

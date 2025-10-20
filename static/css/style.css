@@ -737,6 +737,123 @@ body {
     }
 }
 
+/* Nextcloud Chat Styles */
+.nextcloud-chat-container {
+    display: flex;
+    flex-direction: column;
+    height: 400px;
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+}
+
+.nextcloud-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+    background: #f8f9fa;
+}
+
+.nextcloud-message {
+    background: white;
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.message-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    font-size: 12px;
+}
+
+.message-author {
+    font-weight: 600;
+    color: #667eea;
+}
+
+.message-time {
+    color: #999;
+}
+
+.message-content {
+    color: #333;
+    font-size: 14px;
+    word-wrap: break-word;
+}
+
+.nextcloud-input-container {
+    display: flex;
+    padding: 15px;
+    background: white;
+    border-top: 1px solid #e0e0e0;
+}
+
+.nextcloud-input-container .input-field {
+    flex: 1;
+    margin: 0;
+}
+
+/* Virtual Keyboard Styles */
+.virtual-keyboard {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(135deg, #FFD700 0%, #FFC107 100%);
+    padding: 15px;
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
+    z-index: 10000;
+    max-width: 1024px;
+    margin: 0 auto;
+}
+
+.keyboard-row {
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+    margin-bottom: 8px;
+}
+
+.keyboard-row:last-child {
+    margin-bottom: 0;
+}
+
+.keyboard-key {
+    background: white;
+    border: 2px solid rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    padding: 12px;
+    font-size: 18px;
+    font-weight: 600;
+    min-width: 50px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+.keyboard-key:active {
+    background: #f0f0f0;
+    transform: scale(0.95);
+}
+
+.keyboard-key-wide {
+    min-width: 80px;
+}
+
+.keyboard-key-space {
+    min-width: 300px;
+}
+
+/* Hidden class */
+.hidden {
+    display: none !important;
+}
+
 /* Landscape optimization */
 @media screen and (orientation: landscape) {
     body {

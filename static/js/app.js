@@ -11,6 +11,11 @@ let notesData = [];
 let quickLinksData = [];
 let weatherDetailsVisible = false;
 let currentWeatherData = null;
+let nextcloudConfigured = false;
+let nextcloudMessageInterval = null;
+let currentFocusedInput = null;
+let keyboardShiftActive = false;
+let keyboardSymbolsActive = false;
 
 // Initialize app
 document.addEventListener('DOMContentLoaded', () => {
@@ -18,6 +23,8 @@ document.addEventListener('DOMContentLoaded', () => {
     updateTime();
     updateWeather();
     loadData();
+    initializeKeyboard();
+    loadNextcloudConfig();
     
     // Update time every second
     setInterval(updateTime, 1000);
@@ -49,6 +56,24 @@ function switchTab(tabName) {
         content.classList.remove('active');
     });
     document.getElementById(`${tabName}-tab`).classList.add('active');
+    
+    // Handle Nextcloud tab specific logic
+    if (tabName === 'nextcloud') {
+        if (nextcloudConfigured) {
+            loadNextcloudMessages();
+            // Start polling for new messages every 10 seconds
+            if (nextcloudMessageInterval) {
+                clearInterval(nextcloudMessageInterval);
+            }
+            nextcloudMessageInterval = setInterval(loadNextcloudMessages, 10000);
+        }
+    } else {
+        // Stop polling when leaving the tab
+        if (nextcloudMessageInterval) {
+            clearInterval(nextcloudMessageInterval);
+            nextcloudMessageInterval = null;
+        }
+    }
 }
 
 // Time Display
@@ -567,3 +592,352 @@ function renderQuickLinks() {
         </div>
     `).join('');
 }
+
+// Virtual Keyboard Functions
+function initializeKeyboard() {
+    // Add focus/blur listeners to all keyboard-enabled inputs
+    document.addEventListener('focusin', (e) => {
+        if (e.target.classList.contains('keyboard-enabled') || 
+            e.target.classList.contains('input-field') ||
+            e.target.tagName === 'TEXTAREA') {
+            currentFocusedInput = e.target;
+            showKeyboard();
+        }
+    });
+    
+    document.addEventListener('focusout', (e) => {
+        // Small delay to allow keyboard button clicks to register
+        setTimeout(() => {
+            if (!document.activeElement.classList.contains('keyboard-key')) {
+                // Don't hide immediately, user might click another input
+            }
+        }, 100);
+    });
+}
+
+function showKeyboard() {
+    document.getElementById('virtual-keyboard').classList.remove('hidden');
+}
+
+function hideKeyboard() {
+    document.getElementById('virtual-keyboard').classList.add('hidden');
+    if (currentFocusedInput) {
+        currentFocusedInput.blur();
+    }
+}
+
+function typeKey(key) {
+    if (!currentFocusedInput) return;
+    
+    const input = currentFocusedInput;
+    const start = input.selectionStart;
+    const end = input.selectionEnd;
+    const text = input.value;
+    
+    let charToAdd = key;
+    if (keyboardShiftActive && key.length === 1) {
+        charToAdd = key.toUpperCase();
+        keyboardShiftActive = false;
+        updateShiftButton();
+    }
+    
+    input.value = text.substring(0, start) + charToAdd + text.substring(end);
+    input.selectionStart = input.selectionEnd = start + charToAdd.length;
+    input.focus();
+}
+
+function backspaceKey() {
+    if (!currentFocusedInput) return;
+    
+    const input = currentFocusedInput;
+    const start = input.selectionStart;
+    const end = input.selectionEnd;
+    const text = input.value;
+    
+    if (start !== end) {
+        input.value = text.substring(0, start) + text.substring(end);
+        input.selectionStart = input.selectionEnd = start;
+    } else if (start > 0) {
+        input.value = text.substring(0, start - 1) + text.substring(start);
+        input.selectionStart = input.selectionEnd = start - 1;
+    }
+    input.focus();
+}
+
+function toggleShift() {
+    keyboardShiftActive = !keyboardShiftActive;
+    updateShiftButton();
+}
+
+function updateShiftButton() {
+    const shiftButtons = document.querySelectorAll('.keyboard-key-wide');
+    shiftButtons.forEach(btn => {
+        if (btn.textContent.includes('Shift')) {
+            btn.style.background = keyboardShiftActive ? '#FFD700' : '';
+        }
+    });
+}
+
+function toggleSymbols() {
+    keyboardSymbolsActive = !keyboardSymbolsActive;
+    // In a full implementation, this would switch to a symbols layout
+    // For now, just show an alert
+    alert('Symbol keyboard not fully implemented. Use the basic symbols on the current keyboard.');
+}
+
+// Nextcloud Functions
+async function loadNextcloudConfig() {
+    try {
+        const response = await fetch(`${API_BASE}/api/nextcloud/config`);
+        const config = await response.json();
+        
+        nextcloudConfigured = config.is_configured;
+        
+        if (nextcloudConfigured) {
+            document.getElementById('nextcloud-chat-container').classList.remove('hidden');
+            document.getElementById('nextcloud-not-configured').classList.add('hidden');
+            document.getElementById('nextcloud-server').value = config.server_url || '';
+            document.getElementById('nextcloud-username').value = config.username || '';
+        } else {
+            document.getElementById('nextcloud-chat-container').classList.add('hidden');
+            document.getElementById('nextcloud-not-configured').classList.remove('hidden');
+        }
+    } catch (error) {
+        console.error('Error loading Nextcloud config:', error);
+        nextcloudConfigured = false;
+    }
+}
+
+function toggleNextcloudSettings() {
+    const form = document.getElementById('nextcloud-config-form');
+    const isHidden = form.classList.contains('hidden');
+    
+    if (isHidden) {
+        form.classList.remove('hidden');
+    } else {
+        form.classList.add('hidden');
+    }
+}
+
+function hideNextcloudSettings() {
+    document.getElementById('nextcloud-config-form').classList.add('hidden');
+}
+
+async function saveNextcloudConfig() {
+    const serverUrl = document.getElementById('nextcloud-server').value.trim();
+    const username = document.getElementById('nextcloud-username').value.trim();
+    const password = document.getElementById('nextcloud-password').value.trim();
+    
+    if (!serverUrl || !username || !password) {
+        alert('Please fill in all fields');
+        return;
+    }
+    
+    try {
+        // First save the config without conversation
+        const response = await fetch(`${API_BASE}/api/nextcloud/config`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                server_url: serverUrl,
+                username: username,
+                app_password: password,
+                conversation_token: ''
+            })
+        });
+        
+        if (!response.ok) {
+            throw new Error('Failed to save configuration');
+        }
+        
+        // Now fetch conversations
+        const convResponse = await fetch(`${API_BASE}/api/nextcloud/conversations`);
+        if (convResponse.ok) {
+            const conversations = await convResponse.json();
+            
+            if (conversations.length === 0) {
+                alert('No conversations found. Please create a conversation in Nextcloud Talk first.');
+                return;
+            }
+            
+            // Show conversation selector
+            const selector = document.getElementById('conversation-selector');
+            const select = document.getElementById('conversation-select');
+            
+            select.innerHTML = conversations.map(conv => 
+                `<option value="${conv.token}">${escapeHtml(conv.name)}</option>`
+            ).join('');
+            
+            selector.classList.remove('hidden');
+            
+            // Wait for user to select conversation
+            alert('Please select a conversation from the dropdown below and save again.');
+            
+        } else {
+            throw new Error('Failed to fetch conversations');
+        }
+        
+    } catch (error) {
+        console.error('Error saving Nextcloud config:', error);
+        alert('Failed to save configuration. Please check your credentials and server URL.');
+    }
+}
+
+async function finalizeNextcloudConfig() {
+    const conversationToken = document.getElementById('conversation-select').value;
+    
+    if (!conversationToken) {
+        alert('Please select a conversation');
+        return;
+    }
+    
+    try {
+        const serverUrl = document.getElementById('nextcloud-server').value.trim();
+        const username = document.getElementById('nextcloud-username').value.trim();
+        const password = document.getElementById('nextcloud-password').value.trim();
+        
+        const response = await fetch(`${API_BASE}/api/nextcloud/config`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                server_url: serverUrl,
+                username: username,
+                app_password: password,
+                conversation_token: conversationToken
+            })
+        });
+        
+        if (response.ok) {
+            hideNextcloudSettings();
+            await loadNextcloudConfig();
+            alert('Nextcloud connected successfully!');
+            loadNextcloudMessages();
+        } else {
+            throw new Error('Failed to save configuration');
+        }
+    } catch (error) {
+        console.error('Error finalizing Nextcloud config:', error);
+        alert('Failed to save configuration.');
+    }
+}
+
+async function disconnectNextcloud() {
+    if (!confirm('Disconnect from Nextcloud? This will delete your saved credentials.')) {
+        return;
+    }
+    
+    try {
+        const response = await fetch(`${API_BASE}/api/nextcloud/config`, {
+            method: 'DELETE'
+        });
+        
+        if (response.ok) {
+            nextcloudConfigured = false;
+            document.getElementById('nextcloud-server').value = '';
+            document.getElementById('nextcloud-username').value = '';
+            document.getElementById('nextcloud-password').value = '';
+            document.getElementById('conversation-selector').classList.add('hidden');
+            hideNextcloudSettings();
+            await loadNextcloudConfig();
+            alert('Disconnected from Nextcloud');
+        }
+    } catch (error) {
+        console.error('Error disconnecting Nextcloud:', error);
+        alert('Failed to disconnect');
+    }
+}
+
+async function loadNextcloudMessages() {
+    if (!nextcloudConfigured) return;
+    
+    try {
+        const response = await fetch(`${API_BASE}/api/nextcloud/messages`);
+        if (response.ok) {
+            const messages = await response.json();
+            renderNextcloudMessages(messages);
+        } else {
+            console.error('Failed to load messages');
+        }
+    } catch (error) {
+        console.error('Error loading Nextcloud messages:', error);
+    }
+}
+
+function renderNextcloudMessages(messages) {
+    const container = document.getElementById('nextcloud-messages');
+    
+    if (messages.length === 0) {
+        container.innerHTML = '<div class="empty-state" style="margin: 20px;">No messages yet. Start the conversation!</div>';
+        return;
+    }
+    
+    // Reverse to show oldest first
+    const sorted = [...messages].reverse();
+    
+    container.innerHTML = sorted.map(msg => {
+        const date = new Date(msg.timestamp * 1000);
+        const timeStr = date.toLocaleTimeString('en-AU', { hour: '2-digit', minute: '2-digit' });
+        
+        return `
+            <div class="nextcloud-message">
+                <div class="message-header">
+                    <span class="message-author">${escapeHtml(msg.actorDisplayName)}</span>
+                    <span class="message-time">${timeStr}</span>
+                </div>
+                <div class="message-content">${escapeHtml(msg.message)}</div>
+            </div>
+        `;
+    }).join('');
+    
+    // Scroll to bottom
+    container.scrollTop = container.scrollHeight;
+}
+
+async function sendNextcloudMessage() {
+    const input = document.getElementById('nextcloud-message-input');
+    const message = input.value.trim();
+    
+    if (!message) {
+        alert('Please enter a message');
+        return;
+    }
+    
+    try {
+        const response = await fetch(`${API_BASE}/api/nextcloud/messages`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ message })
+        });
+        
+        if (response.ok) {
+            input.value = '';
+            // Reload messages immediately
+            await loadNextcloudMessages();
+        } else {
+            alert('Failed to send message');
+        }
+    } catch (error) {
+        console.error('Error sending message:', error);
+        alert('Failed to send message');
+    }
+}
+
+function handleNextcloudMessageKeypress(event) {
+    if (event.key === 'Enter') {
+        sendNextcloudMessage();
+    }
+}
+
+// Update save button to handle conversation selection
+document.addEventListener('DOMContentLoaded', () => {
+    const conversationSelect = document.getElementById('conversation-select');
+    if (conversationSelect) {
+        conversationSelect.addEventListener('change', () => {
+            const btn = document.querySelector('#nextcloud-config-form .btn-save');
+            if (btn && document.getElementById('conversation-selector').classList.contains('hidden') === false) {
+                btn.onclick = finalizeNextcloudConfig;
+                btn.textContent = 'Connect to Conversation';
+            }
+        });
+    }
+});

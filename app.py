@@ -5,6 +5,7 @@ Serves the web interface and provides API endpoints for data persistence.
 """
 import os
 import json
+import requests
 from datetime import datetime
 from flask import Flask, render_template, jsonify, request, send_from_directory
 from flask_cors import CORS
@@ -24,7 +25,8 @@ def load_data():
         'timetables': [],
         'shopping_lists': [],
         'notes': [],
-        'quick_links': []
+        'quick_links': [],
+        'nextcloud_config': {}
     }
 
 def save_data(data):
@@ -193,6 +195,132 @@ def quick_link_item(link_id):
 def serve_image(filename):
     """Serve images from the static/images directory."""
     return send_from_directory(os.path.join(app.root_path, 'static', 'images'), filename)
+
+@app.route('/api/nextcloud/config', methods=['GET', 'POST', 'DELETE'])
+def nextcloud_config():
+    """Handle Nextcloud configuration operations."""
+    data = load_data()
+    
+    if request.method == 'GET':
+        # Return config without password
+        config = data.get('nextcloud_config', {})
+        safe_config = {
+            'server_url': config.get('server_url', ''),
+            'username': config.get('username', ''),
+            'conversation_token': config.get('conversation_token', ''),
+            'is_configured': bool(config.get('server_url') and config.get('username') and config.get('app_password'))
+        }
+        return jsonify(safe_config)
+    
+    if request.method == 'POST':
+        config = request.json
+        data['nextcloud_config'] = {
+            'server_url': config.get('server_url', '').rstrip('/'),
+            'username': config.get('username', ''),
+            'app_password': config.get('app_password', ''),
+            'conversation_token': config.get('conversation_token', '')
+        }
+        save_data(data)
+        return jsonify({'success': True}), 201
+    
+    if request.method == 'DELETE':
+        data['nextcloud_config'] = {}
+        save_data(data)
+        return '', 204
+
+@app.route('/api/nextcloud/conversations', methods=['GET'])
+def nextcloud_conversations():
+    """Get list of Nextcloud Talk conversations."""
+    data = load_data()
+    config = data.get('nextcloud_config', {})
+    
+    if not config.get('server_url') or not config.get('username') or not config.get('app_password'):
+        return jsonify({'error': 'Nextcloud not configured'}), 400
+    
+    try:
+        url = f"{config['server_url']}/ocs/v2.php/apps/spreed/api/v4/room"
+        response = requests.get(
+            url,
+            auth=(config['username'], config['app_password']),
+            headers={'OCS-APIRequest': 'true', 'Accept': 'application/json'}
+        )
+        
+        if response.status_code == 200:
+            data = response.json()
+            conversations = data.get('ocs', {}).get('data', [])
+            # Simplify conversation data
+            simplified = [{
+                'token': conv['token'],
+                'name': conv['displayName'],
+                'type': conv['type']
+            } for conv in conversations]
+            return jsonify(simplified)
+        else:
+            return jsonify({'error': 'Failed to fetch conversations', 'status': response.status_code}), 400
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/nextcloud/messages', methods=['GET', 'POST'])
+def nextcloud_messages():
+    """Get or send messages in a Nextcloud Talk conversation."""
+    data = load_data()
+    config = data.get('nextcloud_config', {})
+    
+    if not config.get('server_url') or not config.get('username') or not config.get('app_password'):
+        return jsonify({'error': 'Nextcloud not configured'}), 400
+    
+    conversation_token = config.get('conversation_token')
+    if not conversation_token:
+        return jsonify({'error': 'No conversation selected'}), 400
+    
+    if request.method == 'GET':
+        try:
+            # Get last 50 messages
+            url = f"{config['server_url']}/ocs/v2.php/apps/spreed/api/v1/chat/{conversation_token}"
+            response = requests.get(
+                url,
+                auth=(config['username'], config['app_password']),
+                headers={'OCS-APIRequest': 'true', 'Accept': 'application/json'},
+                params={'limit': 50, 'lookIntoFuture': 0}
+            )
+            
+            if response.status_code == 200:
+                data = response.json()
+                messages = data.get('ocs', {}).get('data', [])
+                # Simplify message data
+                simplified = [{
+                    'id': msg['id'],
+                    'message': msg['message'],
+                    'actorDisplayName': msg['actorDisplayName'],
+                    'actorId': msg['actorId'],
+                    'timestamp': msg['timestamp']
+                } for msg in messages]
+                return jsonify(simplified)
+            else:
+                return jsonify({'error': 'Failed to fetch messages', 'status': response.status_code}), 400
+        except Exception as e:
+            return jsonify({'error': str(e)}), 500
+    
+    if request.method == 'POST':
+        message = request.json.get('message', '').strip()
+        if not message:
+            return jsonify({'error': 'Message cannot be empty'}), 400
+        
+        try:
+            url = f"{config['server_url']}/ocs/v2.php/apps/spreed/api/v1/chat/{conversation_token}"
+            response = requests.post(
+                url,
+                auth=(config['username'], config['app_password']),
+                headers={'OCS-APIRequest': 'true', 'Accept': 'application/json'},
+                json={'message': message}
+            )
+            
+            if response.status_code in [200, 201]:
+                return jsonify({'success': True}), 201
+            else:
+                return jsonify({'error': 'Failed to send message', 'status': response.status_code}), 400
+        except Exception as e:
+            return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':
     # Run on all interfaces for access from browser
